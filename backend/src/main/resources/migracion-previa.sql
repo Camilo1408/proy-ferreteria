@@ -7,8 +7,8 @@
 -- autor: Camilo1408
 -- version: 1.1.0
 
--- Los usuarios de la versión anterior (rol ADMIN/USER) se recrean con perfiles al arrancar (DataSeeder).
-DROP TABLE IF EXISTS usuario;
+-- La tabla de usuarios de la versión anterior (con rol) la elimina MigracionDatos solo si realmente es esa tabla;
+-- los usuarios se recrean con perfiles al arrancar (DataSeeder).
 
 -- Productos: nuevas columnas con valores por defecto para las filas existentes.
 ALTER TABLE IF EXISTS producto ADD COLUMN IF NOT EXISTS codigo VARCHAR(30);

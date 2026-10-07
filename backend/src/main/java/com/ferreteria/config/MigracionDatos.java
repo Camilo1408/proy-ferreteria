@@ -1,6 +1,6 @@
 /*
  * nombre: MigracionDatos.java
- * descripcion: Completa datos de bases creadas con la versión anterior (código de productos).
+ * descripcion: Completa datos de bases creadas con la versión anterior (código de productos y tabla de usuarios antigua).
  * fecha_creacion: 2026-10-08
  * actualizacion: 2026-10-08
  * autor: Camilo1408
@@ -25,5 +25,16 @@ public class MigracionDatos implements CommandLineRunner {
     @Override
     public void run(String... args) {
         jdbc.update("UPDATE producto SET codigo = 'LEG-' || id WHERE codigo IS NULL");
+        eliminarUsuariosAntiguos();
+    }
+
+    /** Elimina la tabla {@code usuario} de la versión anterior, reconocible por su columna {@code rol}. */
+    private void eliminarUsuariosAntiguos() {
+        Integer esAntigua = jdbc.queryForObject(
+                "select count(*) from information_schema.columns where lower(table_name) = 'usuario' and lower(column_name) = 'rol'",
+                Integer.class);
+        if (esAntigua != null && esAntigua > 0) {
+            jdbc.execute("DROP TABLE usuario");
+        }
     }
 }
