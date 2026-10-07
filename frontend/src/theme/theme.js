@@ -25,6 +25,7 @@ export function buildTheme(mode) {
       secondary: { main: c.accent, contrastText: c.onAccent },
       error: { main: c.danger },
       success: { main: c.success },
+      warning: { main: c.warning },
       background: { default: c.bg, paper: c.surface },
       text: { primary: c.ink, secondary: c.muted },
       divider: c.line,

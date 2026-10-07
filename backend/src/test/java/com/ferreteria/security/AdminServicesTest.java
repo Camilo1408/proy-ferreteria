@@ -98,9 +98,12 @@ class AdminServicesTest {
     void actualizaUsuario() {
         Usuario u = usuario("luis", true, operario);
         when(usuarios.findById(5L)).thenReturn(Optional.of(u));
-        when(perfiles.findById(2L)).thenReturn(Optional.of(operario));
+        Perfil otro = Perfil.builder().id(3L).nombre("Otro perfil").permisos(new HashSet<>()).build();
+        when(perfiles.findById(3L)).thenReturn(Optional.of(otro));
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-        UsuarioResponse r = usuarioService.actualizar(5L, new UsuarioActualizacion(" Luis R ", "l@x.co", 2L, false), "admin");
+        UsuarioResponse r = usuarioService.actualizar(5L, new UsuarioActualizacion(" Luis R ", "l@x.co", 3L, false), "admin");
+        assertEquals("Otro perfil", r.perfil().nombre());
+        assertEquals(3L, u.getPerfil().getId());
         assertFalse(r.activo());
         assertEquals("Luis R", r.nombreCompleto());
         assertEquals("l@x.co", r.email());
@@ -200,6 +203,8 @@ class AdminServicesTest {
         when(usuarios.countByPerfilId(2L)).thenReturn(3L);
         PerfilResponse r = perfilService.actualizar(2L, new PerfilRequest("Operario 2", "desc", EnumSet.of(Permiso.ALERTAS_VER)));
         assertEquals("Operario 2", r.nombre());
+        assertEquals("desc", r.descripcion());
+        assertEquals("desc", operario.getDescripcion());
         assertEquals(java.util.List.of("ALERTAS_VER"), r.permisos());
         assertEquals(3, r.usuarios());
         verify(guard).verificar();

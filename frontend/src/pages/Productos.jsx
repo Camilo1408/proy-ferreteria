@@ -1,31 +1,44 @@
 /**
  * nombre: Productos.jsx
- * descripcion: Listado de productos con búsqueda, filtro, paginación y acciones de administrador.
+ * descripcion: Catálogo con existencias: búsqueda, filtros, productos en mínimos, movimientos rápidos y exportación.
  * fecha_creacion: 2026-10-07
- * actualizacion: 2026-10-07
+ * actualizacion: 2026-10-08
  * autor: Camilo1408
- * version: 1.0.0
+ * version: 1.1.0
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  IconButton, LinearProgress, MenuItem, Paper, Snackbar, Table, TableBody, TableCell, TableContainer,
-  TableHead, TablePagination, TableRow, TextField, Tooltip, Typography, useMediaQuery,
+  Alert, Box, Button, FormControlLabel, IconButton, LinearProgress, MenuItem, Paper, Switch, Table, TableBody, TableCell,
+  TableContainer, TableHead, TablePagination, TableRow, TextField, Tooltip, Typography, useMediaQuery,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import BlockOutlined from '@mui/icons-material/BlockOutlined';
+import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
+import SwapVertOutlined from '@mui/icons-material/SwapVertOutlined';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as api from '../api/productos';
 import { useAuth } from '../auth/AuthContext';
+import { EVENTO_ALERTAS } from '../components/AppHeader';
+import { EstadoChip, NivelChip } from '../components/Chips';
+import ConfirmDialog from '../components/ConfirmDialog';
+import MovimientoDialog from '../components/MovimientoDialog';
 import ProductoForm from '../components/ProductoForm';
+import { P } from '../constants';
+import { useAviso } from '../context/AvisoContext';
+import { formatoCantidad } from '../utils/format';
 
-const CATEGORIA_FONT = { fontFamily: '"IBM Plex Mono", monospace', fontSize: '0.85rem' };
+const MONO = { fontFamily: '"IBM Plex Mono", monospace', fontSize: '0.85rem' };
 
-/** Pantalla principal del CRUD. */
+/** Pantalla principal de productos y existencias. */
 export default function Productos() {
-  const { t } = useTranslation();
-  const { esAdmin } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { tiene } = useAuth();
+  const { avisar } = useAviso();
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const movil = useMediaQuery((th) => th.breakpoints.down('md'));
   const [pagina, setPagina] = useState({ content: [], totalElements: 0 });
   const [page, setPage] = useState(0);
@@ -33,11 +46,15 @@ export default function Productos() {
   const [estado, setEstado] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [q, setQ] = useState('');
+  const bajoMinimo = params.get('minimos') === '1';
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
-  const [aviso, setAviso] = useState('');
   const [form, setForm] = useState({ abierto: false, producto: null });
+  const [movimiento, setMovimiento] = useState(null);
   const [aDesactivar, setADesactivar] = useState(null);
+  const puedeGestionar = tiene(P.PRODUCTOS_GESTIONAR);
+  const puedeMover = tiene(P.MOVIMIENTOS_REGISTRAR) || tiene(P.AJUSTES_REGISTRAR);
+  const hayAcciones = puedeGestionar || puedeMover || tiene(P.MOVIMIENTOS_VER);
 
   useEffect(() => {
     const id = setTimeout(() => { setQ(busqueda); setPage(0); }, 300);
@@ -48,32 +65,41 @@ export default function Productos() {
     setCargando(true);
     setError('');
     try {
-      setPagina(await api.listar({ page, size, estado, q }));
+      setPagina(await api.listar({ page, size, estado, q, bajoMinimo }));
     } catch (e) {
       setError(e.message);
     } finally {
       setCargando(false);
     }
-  }, [page, size, estado, q]);
-
+  }, [page, size, estado, q, bajoMinimo]);
   useEffect(() => { cargar(); }, [cargar]);
 
-  const guardar = async (v) => {
+  const alternarMinimos = (e) => {
+    const siguiente = new URLSearchParams(params);
+    if (e.target.checked) siguiente.set('minimos', '1');
+    else siguiente.delete('minimos');
+    setParams(siguiente, { replace: true });
+    setPage(0);
+  };
+
+  const guardar = async (cuerpo) => {
     if (form.producto) {
-      await api.actualizar(form.producto.id, v);
-      setAviso(t('avisos.actualizado'));
+      await api.actualizar(form.producto.id, cuerpo);
+      avisar(t('avisos.actualizado'));
     } else {
-      await api.crear({ nombre: v.nombre, categoria: v.categoria, descripcion: v.descripcion });
-      setAviso(t('avisos.creado'));
+      await api.crear(cuerpo);
+      avisar(t('avisos.creado'));
     }
     setForm({ abierto: false, producto: null });
+    window.dispatchEvent(new Event(EVENTO_ALERTAS));
     cargar();
   };
 
   const confirmarDesactivar = async () => {
     try {
       await api.desactivar(aDesactivar.id);
-      setAviso(t('avisos.desactivado'));
+      avisar(t('avisos.desactivado'));
+      window.dispatchEvent(new Event(EVENTO_ALERTAS));
       cargar();
     } catch (e) {
       setError(e.message);
@@ -82,54 +108,72 @@ export default function Productos() {
     }
   };
 
-  const chip = (e) => (
-    <Chip size="small" variant="outlined" color={e === 'ACTIVO' ? 'success' : 'default'} label={t(`productos.estados.${e}`)} />
-  );
-  const acciones = (p) => esAdmin && (
+  const registrado = () => {
+    setMovimiento(null);
+    avisar(t('movimientos.registrado'));
+    window.dispatchEvent(new Event(EVENTO_ALERTAS));
+    cargar();
+  };
+
+  const exportar = async () => {
+    try {
+      await api.descargarInventario(bajoMinimo);
+      avisar(t('avisos.exportado'));
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const stock = (p) => `${formatoCantidad(p.stockActual, i18n.language)} ${p.unidad}`;
+  const acciones = (p) => hayAcciones && (
     <>
-      <Tooltip title={t('productos.editar')}>
-        <IconButton aria-label={`${t('productos.editar')}: ${p.nombre}`} onClick={() => setForm({ abierto: true, producto: p })}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={t('productos.desactivar')}>
-        <span>
-          <IconButton
-            aria-label={`${t('productos.desactivar')}: ${p.nombre}`}
-            disabled={p.estado === 'INACTIVO'}
-            onClick={() => setADesactivar(p)}
-          >
-            <BlockOutlined />
-          </IconButton>
-        </span>
-      </Tooltip>
+      {puedeMover && p.estado === 'ACTIVO' && (
+        <Tooltip title={t('productos.movimiento')}>
+          <IconButton aria-label={`${t('productos.movimiento')}: ${p.nombre}`} onClick={() => setMovimiento(p)}><SwapVertOutlined /></IconButton>
+        </Tooltip>
+      )}
+      {tiene(P.MOVIMIENTOS_VER) && (
+        <Tooltip title={t('productos.historial')}>
+          <IconButton aria-label={`${t('productos.historial')}: ${p.nombre}`} onClick={() => navigate(`/movimientos?productoId=${p.id}`)}><HistoryOutlined /></IconButton>
+        </Tooltip>
+      )}
+      {puedeGestionar && (
+        <>
+          <Tooltip title={t('productos.editar')}>
+            <IconButton aria-label={`${t('productos.editar')}: ${p.nombre}`} onClick={() => setForm({ abierto: true, producto: p })}><EditOutlined /></IconButton>
+          </Tooltip>
+          <Tooltip title={t('productos.desactivar')}>
+            <span>
+              <IconButton aria-label={`${t('productos.desactivar')}: ${p.nombre}`} disabled={p.estado === 'INACTIVO'} onClick={() => setADesactivar(p)}><BlockOutlined /></IconButton>
+            </span>
+          </Tooltip>
+        </>
+      )}
     </>
   );
 
   return (
-    <Box component="main" id="contenido" sx={{ px: { xs: 2, md: 4 }, py: 3, maxWidth: 1100, mx: 'auto' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+    <Box component="main" id="contenido" sx={{ px: { xs: 2, md: 4 }, py: 3, maxWidth: 1200, mx: 'auto' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
         <Typography component="h1" variant="h1" sx={{ flexGrow: 1 }}>{t('productos.titulo')}</Typography>
-        {esAdmin && (
+        {tiene(P.REPORTES_VER) && (
+          <Button variant="outlined" startIcon={<DownloadOutlined />} onClick={exportar}>{t('productos.exportar')}</Button>
+        )}
+        {puedeGestionar && (
           <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => setForm({ abierto: true, producto: null })}>
             {t('productos.nuevo')}
           </Button>
         )}
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <TextField
-          size="small" type="search" label={t('productos.buscar')} value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)} sx={{ flex: '1 1 260px' }}
-        />
-        <TextField
-          size="small" select label={t('productos.estado')} value={estado}
-          onChange={(e) => { setEstado(e.target.value); setPage(0); }} sx={{ minWidth: 160 }}
-        >
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2, alignItems: 'center' }}>
+        <TextField size="small" type="search" label={t('productos.buscar')} value={busqueda} onChange={(e) => setBusqueda(e.target.value)} sx={{ flex: '1 1 280px' }} />
+        <TextField size="small" select label={t('productos.estado')} value={estado} onChange={(e) => { setEstado(e.target.value); setPage(0); }} sx={{ minWidth: 150 }}>
           <MenuItem value="">{t('productos.todos')}</MenuItem>
           <MenuItem value="ACTIVO">{t('productos.estados.ACTIVO')}</MenuItem>
           <MenuItem value="INACTIVO">{t('productos.estados.INACTIVO')}</MenuItem>
         </TextField>
+        <FormControlLabel control={<Switch checked={bajoMinimo} onChange={alternarMinimos} />} label={t('productos.soloMinimos')} />
       </Box>
 
       <div>{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}</div>
@@ -142,10 +186,13 @@ export default function Productos() {
               <Box component="li" key={p.id} sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 1 }}>
                   <Typography sx={{ fontWeight: 600 }}>{p.nombre}</Typography>
-                  {chip(p.estado)}
+                  <EstadoChip estado={p.estado} />
                 </Box>
-                <Typography sx={{ ...CATEGORIA_FONT, color: 'text.secondary' }}>{p.categoria}</Typography>
-                {p.descripcion && <Typography variant="body2" sx={{ mt: 0.5 }}>{p.descripcion}</Typography>}
+                <Typography sx={{ ...MONO, color: 'text.secondary' }}>{p.codigo} · {p.categoria}</Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5 }}>
+                  <Typography sx={MONO}>{stock(p)}</Typography>
+                  <NivelChip nivel={p.nivel} />
+                </Box>
                 <Box sx={{ mt: 0.5 }}>{acciones(p)}</Box>
               </Box>
             ))}
@@ -155,55 +202,50 @@ export default function Productos() {
             <Table aria-label={t('productos.titulo')}>
               <TableHead>
                 <TableRow>
+                  <TableCell>{t('productos.cols.codigo')}</TableCell>
                   <TableCell>{t('productos.cols.nombre')}</TableCell>
                   <TableCell>{t('productos.cols.categoria')}</TableCell>
-                  <TableCell>{t('productos.cols.descripcion')}</TableCell>
+                  <TableCell align="right">{t('productos.cols.stock')}</TableCell>
+                  <TableCell align="right">{t('productos.cols.minimo')}</TableCell>
                   <TableCell>{t('productos.cols.estado')}</TableCell>
-                  {esAdmin && <TableCell align="right">{t('productos.cols.acciones')}</TableCell>}
+                  {hayAcciones && <TableCell align="right">{t('productos.cols.acciones')}</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {pagina.content.map((p) => (
                   <TableRow key={p.id} hover>
+                    <TableCell sx={MONO}>{p.codigo}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{p.nombre}</TableCell>
-                    <TableCell sx={CATEGORIA_FONT}>{p.categoria}</TableCell>
-                    <TableCell sx={{ color: 'text.secondary', maxWidth: 320 }}>{p.descripcion}</TableCell>
-                    <TableCell>{chip(p.estado)}</TableCell>
-                    {esAdmin && <TableCell align="right">{acciones(p)}</TableCell>}
+                    <TableCell sx={{ color: 'text.secondary' }}>{p.categoria}</TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'inline-flex', gap: 1, alignItems: 'center' }}>
+                        <Typography component="span" sx={MONO}>{stock(p)}</Typography>
+                        {p.nivel !== 'OK' && <NivelChip nivel={p.nivel} />}
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right" sx={{ ...MONO, color: 'text.secondary' }}>{formatoCantidad(p.stockMinimo, i18n.language)}</TableCell>
+                    <TableCell><EstadoChip estado={p.estado} /></TableCell>
+                    {hayAcciones && <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{acciones(p)}</TableCell>}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         )}
-        {!cargando && pagina.content.length === 0 && !error && (
-          <Typography sx={{ p: 3 }} color="text.secondary">{t('productos.vacio')}</Typography>
-        )}
+        {!cargando && pagina.content.length === 0 && !error && <Typography sx={{ p: 3 }} color="text.secondary">{t('productos.vacio')}</Typography>}
         <TablePagination
-          component="div" count={pagina.totalElements} page={page} rowsPerPage={size}
-          rowsPerPageOptions={[5, 10, 25]} labelRowsPerPage={t('productos.filasPorPagina')}
-          onPageChange={(_, n) => setPage(n)}
+          component="div" count={pagina.totalElements} page={page} rowsPerPage={size} rowsPerPageOptions={[5, 10, 25]}
+          labelRowsPerPage={t('productos.filasPorPagina')} onPageChange={(_, n) => setPage(n)}
           onRowsPerPageChange={(e) => { setSize(Number(e.target.value)); setPage(0); }}
         />
       </Paper>
 
-      <ProductoForm
-        abierto={form.abierto} producto={form.producto}
-        onCerrar={() => setForm({ abierto: false, producto: null })} onGuardar={guardar}
+      <ProductoForm abierto={form.abierto} producto={form.producto} onCerrar={() => setForm({ abierto: false, producto: null })} onGuardar={guardar} />
+      <MovimientoDialog abierto={Boolean(movimiento)} producto={movimiento} onCerrar={() => setMovimiento(null)} onRegistrado={registrado} />
+      <ConfirmDialog
+        abierto={Boolean(aDesactivar)} titulo={t('confirmar.titulo')} texto={t('confirmar.texto', { nombre: aDesactivar?.nombre })}
+        confirmar={t('confirmar.si')} onConfirmar={confirmarDesactivar} onCerrar={() => setADesactivar(null)}
       />
-
-      <Dialog open={Boolean(aDesactivar)} onClose={() => setADesactivar(null)} aria-labelledby="conf-titulo">
-        <DialogTitle id="conf-titulo">{t('confirmar.titulo')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{t('confirmar.texto', { nombre: aDesactivar?.nombre })}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setADesactivar(null)}>{t('form.cancelar')}</Button>
-          <Button color="error" variant="contained" onClick={confirmarDesactivar}>{t('confirmar.si')}</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar open={Boolean(aviso)} autoHideDuration={4000} onClose={() => setAviso('')} message={aviso} />
     </Box>
   );
 }

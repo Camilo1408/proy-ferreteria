@@ -1,10 +1,10 @@
 /**
  * nombre: client.js
- * descripcion: Cliente HTTP JSON para la API (token Bearer, Accept-Language, errores uniformes).
+ * descripcion: Cliente HTTP JSON para la API (token Bearer, Accept-Language, errores uniformes, descargas).
  * fecha_creacion: 2026-10-07
- * actualizacion: 2026-10-07
+ * actualizacion: 2026-10-08
  * autor: Camilo1408
- * version: 1.0.0
+ * version: 1.1.0
  */
 import i18n from '../i18n';
 
@@ -32,6 +32,29 @@ export class ApiError extends Error {
   }
 }
 
+function cabeceras(extra = {}) {
+  return {
+    'Accept-Language': i18n.language,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extra,
+  };
+}
+
+async function enviar(path, init) {
+  try {
+    return await fetch(`${BASE}${path}`, init);
+  } catch {
+    throw new ApiError(0, { mensaje: i18n.t('errores.red') });
+  }
+}
+
+async function validar(res) {
+  if (res.ok) return;
+  const data = await res.json().catch(() => null);
+  if (res.status === 401 && token) onUnauthorized();
+  throw new ApiError(res.status, data);
+}
+
 /**
  * Ejecuta una petición JSON.
  * @param {string} path ruta relativa, por ejemplo `/api/v1/productos`
@@ -39,25 +62,40 @@ export class ApiError extends Error {
  * @returns {Promise<any>} cuerpo JSON o null si no hay contenido
  */
 export async function request(path, { method = 'GET', body } = {}) {
-  let res;
-  try {
-    res = await fetch(`${BASE}${path}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept-Language': i18n.language,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-  } catch {
-    throw new ApiError(0, { mensaje: i18n.t('errores.red') });
-  }
+  const res = await enviar(path, {
+    method,
+    headers: cabeceras({ 'Content-Type': 'application/json' }),
+    body: body ? JSON.stringify(body) : undefined,
+  });
   if (res.status === 204) return null;
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    if (res.status === 401 && token) onUnauthorized();
-    throw new ApiError(res.status, data);
-  }
-  return data;
+  if (!res.ok) await validar(res);
+  return res.json();
+}
+
+/**
+ * Descarga un archivo autenticado y lo entrega al navegador.
+ * @param {string} path ruta relativa
+ * @param {string} nombre nombre del archivo a guardar
+ */
+export async function descargar(path, nombre) {
+  const res = await enviar(path, { headers: cabeceras() });
+  await validar(res);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** Arma una cadena de consulta omitiendo valores vacíos. */
+export function consulta(params) {
+  const p = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== '' && v !== null && v !== undefined && v !== false) p.set(k, v);
+  });
+  const s = p.toString();
+  return s ? `?${s}` : '';
 }

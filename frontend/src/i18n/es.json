@@ -1,51 +1,103 @@
 {
-  "app": { "nombre": "Ferretería", "saltar": "Saltar al contenido" },
-  "nav": { "salir": "Salir", "idioma": "Idioma", "tema": "Cambiar tema", "rol": "Rol" },
-  "login": {
-    "titulo": "Ingreso al inventario",
-    "usuario": "Usuario",
-    "clave": "Contraseña",
-    "entrar": "Entrar",
-    "error": "Usuario o contraseña incorrectos"
+  "app": { "nombre": "Ferretería", "saltar": "Saltar al contenido", "cargando": "Cargando", "cerrar": "Cerrar", "si": "Sí", "no": "No" },
+  "nav": { "principal": "Navegación principal", "panel": "Panel", "productos": "Productos", "movimientos": "Movimientos", "alertas": "Alertas", "usuarios": "Usuarios", "perfiles": "Perfiles", "cuenta": "Mi cuenta", "salir": "Salir", "idioma": "Idioma", "tema": "Cambiar tema", "alertasPendientes": "Alertas pendientes: {{n}}", "sinAlertas": "Sin alertas pendientes" },
+  "login": { "titulo": "Ingreso al inventario", "usuario": "Usuario", "clave": "Contraseña", "entrar": "Entrar", "error": "Usuario o contraseña incorrectos" },
+  "sinAcceso": { "titulo": "Sin acceso", "texto": "Su perfil no incluye permisos para esta sección.", "ir": "Ir a mi cuenta" },
+  "panel": {
+    "titulo": "Panel", "productosActivos": "Productos activos", "bajoMinimo": "En mínimos", "agotados": "Agotados",
+    "alertas": "Alertas pendientes", "movimientosHoy": "Movimientos de hoy", "verTodos": "Ver todos", "enMinimos": "Productos en mínimos",
+    "todoBien": "Ningún producto está en su mínimo.", "reponer": "Reponer"
   },
   "productos": {
-    "titulo": "Productos",
-    "nuevo": "Nuevo producto",
-    "buscar": "Buscar por nombre o categoría",
-    "estado": "Estado",
-    "todos": "Todos",
-    "vacio": "No hay productos que coincidan.",
-    "cargando": "Cargando productos",
-    "editar": "Editar producto",
-    "desactivar": "Desactivar producto",
-    "filasPorPagina": "Filas por página",
-    "cols": { "nombre": "Nombre", "categoria": "Categoría", "descripcion": "Descripción", "estado": "Estado", "acciones": "Acciones" },
-    "estados": { "ACTIVO": "Activo", "INACTIVO": "Inactivo" }
+    "titulo": "Productos", "nuevo": "Nuevo producto", "buscar": "Buscar por código, nombre o categoría", "estado": "Estado", "todos": "Todos",
+    "soloMinimos": "Solo en mínimos", "vacio": "No hay productos que coincidan.", "cargando": "Cargando productos",
+    "editar": "Editar producto", "desactivar": "Desactivar producto", "movimiento": "Registrar movimiento", "historial": "Ver historial",
+    "exportar": "Exportar CSV", "filasPorPagina": "Filas por página",
+    "cols": { "codigo": "Código", "nombre": "Nombre", "categoria": "Categoría", "descripcion": "Descripción", "stock": "Stock", "minimo": "Mínimo", "estado": "Estado", "acciones": "Acciones" },
+    "estados": { "ACTIVO": "Activo", "INACTIVO": "Inactivo" },
+    "stockDe": "Stock: {{stock}} {{unidad}}", "minimoDe": "Mínimo: {{minimo}}"
   },
+  "niveles": { "OK": "Normal", "BAJO": "Bajo", "AGOTADO": "Agotado" },
+  "unidades": { "UND": "Unidad", "KG": "Kilogramo", "G": "Gramo", "M": "Metro", "CM": "Centímetro", "L": "Litro", "ML": "Mililitro", "CAJA": "Caja", "PAQUETE": "Paquete", "ROLLO": "Rollo" },
   "form": {
-    "crear": "Crear producto",
-    "editarTitulo": "Editar producto",
-    "nombre": "Nombre",
-    "categoria": "Categoría",
-    "descripcion": "Descripción",
-    "estado": "Estado",
-    "guardar": "Guardar",
-    "cancelar": "Cancelar"
+    "crear": "Crear producto", "editarTitulo": "Editar producto", "codigo": "Código", "nombre": "Nombre", "categoria": "Categoría",
+    "descripcion": "Descripción", "unidad": "Unidad", "stockMinimo": "Stock mínimo", "stockInicial": "Stock inicial", "estado": "Estado",
+    "ayudaMinimo": "Con 0 no se generan alertas", "ayudaInicial": "Se registra como una entrada", "guardar": "Guardar", "cancelar": "Cancelar"
   },
-  "confirmar": {
-    "titulo": "Desactivar producto",
-    "texto": "El producto \"{{nombre}}\" pasará a inactivo. No se elimina y podrá reactivarse.",
-    "si": "Desactivar"
+  "confirmar": { "titulo": "Desactivar producto", "texto": "El producto \"{{nombre}}\" pasará a inactivo. No se elimina y podrá reactivarse.", "si": "Desactivar" },
+  "movimientos": {
+    "titulo": "Movimientos", "registrar": "Registrar movimiento", "vacio": "No hay movimientos que coincidan.",
+    "producto": "Producto", "tipo": "Tipo", "todos": "Todos", "desde": "Desde", "hasta": "Hasta", "limpiar": "Limpiar filtros",
+    "cols": { "fecha": "Fecha", "producto": "Producto", "tipo": "Tipo", "motivo": "Motivo", "variacion": "Variación", "stock": "Stock", "usuario": "Usuario", "detalle": "Referencia y nota" },
+    "tipos": { "ENTRADA": "Entrada", "SALIDA": "Salida", "AJUSTE": "Ajuste" },
+    "cantidad": "Cantidad", "stockContado": "Stock contado", "motivo": "Motivo", "referencia": "Referencia (factura, orden)",
+    "nota": "Nota", "notaAjuste": "Nota (obligatoria en ajustes)", "stockActual": "Stock actual: {{stock}} {{unidad}}",
+    "buscarProducto": "Buscar producto", "sinProductos": "Sin resultados", "registrado": "Movimiento registrado",
+    "anteriorResultante": "{{anterior}} → {{resultante}}"
+  },
+  "motivos": {
+    "COMPRA": "Compra", "DEVOLUCION_CLIENTE": "Devolución de cliente", "STOCK_INICIAL": "Stock inicial", "OTRA_ENTRADA": "Otra entrada",
+    "VENTA": "Venta", "CONSUMO_INTERNO": "Consumo interno", "MERMA": "Merma", "DEVOLUCION_PROVEEDOR": "Devolución a proveedor", "OTRA_SALIDA": "Otra salida",
+    "CONTEO_FISICO": "Conteo físico", "DANO": "Daño", "CORRECCION": "Corrección"
+  },
+  "alertas": {
+    "titulo": "Alertas de stock", "vigentes": "Vigentes", "resueltas": "Resueltas", "vacio": "No hay alertas en esta vista.",
+    "reconocer": "Reconocer", "reponer": "Reponer", "reconocida": "Alerta reconocida",
+    "cols": { "producto": "Producto", "nivel": "Nivel", "stock": "Stock", "minimo": "Mínimo", "faltante": "Faltante", "estado": "Estado", "detectada": "Detectada", "acciones": "Acciones" },
+    "estados": { "ABIERTA": "Pendiente", "RECONOCIDA": "Reconocida", "RESUELTA": "Resuelta" },
+    "por": "por {{usuario}}"
+  },
+  "usuarios": {
+    "titulo": "Usuarios", "nuevo": "Nuevo usuario", "buscar": "Buscar por usuario o nombre", "vacio": "No hay usuarios que coincidan.",
+    "editar": "Editar usuario", "clave": "Restablecer contraseña", "crearTitulo": "Crear usuario", "editarTitulo": "Editar usuario",
+    "claveTitulo": "Restablecer contraseña de {{usuario}}", "nuevaClave": "Nueva contraseña", "activo": "Activo",
+    "cols": { "usuario": "Usuario", "nombre": "Nombre", "correo": "Correo", "perfil": "Perfil", "estado": "Estado", "acciones": "Acciones" },
+    "estados": { "true": "Activo", "false": "Inactivo" },
+    "username": "Nombre de usuario", "password": "Contraseña", "nombreCompleto": "Nombre completo", "email": "Correo", "perfil": "Perfil",
+    "ayudaClave": "8 a 72 caracteres, con letra y número, sin espacios", "creado": "Usuario creado", "actualizado": "Usuario actualizado", "claveCambiada": "Contraseña restablecida",
+    "esUnoMismo": "No puede desactivarse ni cambiarse el perfil a sí mismo"
+  },
+  "perfiles": {
+    "titulo": "Perfiles", "nuevo": "Nuevo perfil", "vacio": "No hay perfiles.", "editar": "Editar perfil", "eliminar": "Eliminar perfil",
+    "crearTitulo": "Crear perfil", "editarTitulo": "Editar perfil", "nombre": "Nombre del perfil", "descripcion": "Descripción", "permisos": "Permisos",
+    "cols": { "nombre": "Perfil", "descripcion": "Descripción", "permisos": "Permisos", "usuarios": "Usuarios", "acciones": "Acciones" },
+    "sistema": "Sistema", "soloLectura": "Perfil del sistema: solo lectura", "creado": "Perfil creado", "actualizado": "Perfil actualizado", "eliminado": "Perfil eliminado",
+    "confirmarTitulo": "Eliminar perfil", "confirmarTexto": "Se eliminará el perfil \"{{nombre}}\". Esta acción no se puede deshacer.", "eliminarSi": "Eliminar",
+    "cantidadPermisos": "{{n}} permisos", "marcarModulo": "Todo el módulo"
+  },
+  "modulos": { "productos": "Productos", "inventario": "Inventario", "alertas": "Alertas", "reportes": "Reportes", "administracion": "Administración" },
+  "permisos": {
+    "PRODUCTOS_VER": "Ver productos y panel", "PRODUCTOS_GESTIONAR": "Crear, editar y desactivar productos",
+    "MOVIMIENTOS_VER": "Ver historial de movimientos", "MOVIMIENTOS_REGISTRAR": "Registrar entradas y salidas",
+    "AJUSTES_REGISTRAR": "Registrar ajustes por conteo", "ALERTAS_VER": "Ver alertas de stock",
+    "ALERTAS_GESTIONAR": "Reconocer alertas", "REPORTES_VER": "Descargar reportes",
+    "USUARIOS_GESTIONAR": "Gestionar usuarios", "PERFILES_GESTIONAR": "Gestionar perfiles"
+  },
+  "cuenta": {
+    "titulo": "Mi cuenta", "datos": "Mis datos", "usuario": "Usuario", "perfil": "Perfil", "nombreCompleto": "Nombre completo", "email": "Correo",
+    "guardar": "Guardar cambios", "guardado": "Datos actualizados", "seguridad": "Cambiar contraseña", "actual": "Contraseña actual",
+    "nueva": "Nueva contraseña", "confirmar": "Confirmar nueva contraseña", "cambiar": "Cambiar contraseña", "claveCambiada": "Contraseña actualizada",
+    "misPermisos": "Mis permisos"
   },
   "validacion": {
-    "nombreRequerido": "El nombre es obligatorio",
-    "nombreTamano": "El nombre debe tener entre 3 y 100 caracteres",
-    "categoriaRequerida": "La categoría es obligatoria",
-    "categoriaTamano": "La categoría no puede superar 60 caracteres",
-    "descripcionTamano": "La descripción no puede superar 500 caracteres",
-    "usuarioRequerido": "El usuario es obligatorio",
-    "claveRequerida": "La contraseña es obligatoria"
+    "codigoRequerido": "El código es obligatorio", "codigoFormato": "De 2 a 30 caracteres: letras, números, punto, guion y guion bajo",
+    "nombreRequerido": "El nombre es obligatorio", "nombreTamano": "El nombre debe tener entre 3 y 100 caracteres",
+    "categoriaRequerida": "La categoría es obligatoria", "categoriaTamano": "La categoría no puede superar 60 caracteres",
+    "descripcionTamano": "La descripción no puede superar 500 caracteres", "unidadRequerida": "Elija una unidad",
+    "cantidadFormato": "Use un número no negativo con hasta 3 decimales", "cantidadRequerida": "La cantidad es obligatoria",
+    "cantidadPositiva": "La cantidad debe ser mayor que cero", "contadoRequerido": "El stock contado es obligatorio",
+    "productoRequerido": "Elija un producto", "motivoRequerido": "Elija un motivo", "referenciaTamano": "Máximo 40 caracteres",
+    "notaTamano": "Máximo 300 caracteres", "notaAjuste": "La nota es obligatoria (mínimo 5 caracteres)",
+    "usuarioRequerido": "El usuario es obligatorio", "claveRequerida": "La contraseña es obligatoria",
+    "usernameRequerido": "El nombre de usuario es obligatorio", "usernameFormato": "De 3 a 50 caracteres: letras, números, punto, guion y guion bajo",
+    "claveFormato": "De 8 a 72 caracteres, con al menos una letra y un número, sin espacios",
+    "nombreCompletoRequerido": "El nombre completo es obligatorio", "nombreCompletoTamano": "Entre 2 y 100 caracteres",
+    "emailFormato": "El correo no es válido", "emailTamano": "Máximo 120 caracteres", "perfilRequerido": "Elija un perfil",
+    "perfilNombreRequerido": "El nombre del perfil es obligatorio", "perfilNombreTamano": "Entre 3 y 60 caracteres",
+    "perfilDescripcionTamano": "Máximo 200 caracteres", "permisosRequeridos": "Elija al menos un permiso",
+    "claveActualRequerida": "La contraseña actual es obligatoria", "claveIgual": "La nueva contraseña debe ser distinta de la actual",
+    "confirmarRequerida": "Confirme la nueva contraseña", "confirmarDistinta": "Las contraseñas no coinciden"
   },
   "errores": { "red": "No se pudo conectar con el servidor", "generico": "Ocurrió un error inesperado" },
-  "avisos": { "creado": "Producto creado", "actualizado": "Producto actualizado", "desactivado": "Producto desactivado" }
+  "avisos": { "creado": "Producto creado", "actualizado": "Producto actualizado", "desactivado": "Producto desactivado", "exportado": "Reporte descargado" }
 }

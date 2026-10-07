@@ -20,6 +20,7 @@ export const colorTokens = {
     accent: '#B8440A',
     onAccent: '#FFFFFF',
     success: '#2B6A3C',
+    warning: '#8A5300',
     danger: '#B3261E',
   },
   dark: {
@@ -33,6 +34,7 @@ export const colorTokens = {
     accent: '#F29254',
     onAccent: '#241104',
     success: '#7CC38F',
+    warning: '#F2B65A',
     danger: '#F2877F',
   },
 };

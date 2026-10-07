@@ -1,51 +1,103 @@
 {
-  "app": { "nombre": "Hardware store", "saltar": "Skip to content" },
-  "nav": { "salir": "Sign out", "idioma": "Language", "tema": "Toggle theme", "rol": "Role" },
-  "login": {
-    "titulo": "Inventory sign in",
-    "usuario": "Username",
-    "clave": "Password",
-    "entrar": "Sign in",
-    "error": "Wrong username or password"
+  "app": { "nombre": "Hardware store", "saltar": "Skip to content", "cargando": "Loading", "cerrar": "Close", "si": "Yes", "no": "No" },
+  "nav": { "principal": "Main navigation", "panel": "Dashboard", "productos": "Products", "movimientos": "Movements", "alertas": "Alerts", "usuarios": "Users", "perfiles": "Profiles", "cuenta": "My account", "salir": "Sign out", "idioma": "Language", "tema": "Toggle theme", "alertasPendientes": "Pending alerts: {{n}}", "sinAlertas": "No pending alerts" },
+  "login": { "titulo": "Inventory sign in", "usuario": "Username", "clave": "Password", "entrar": "Sign in", "error": "Wrong username or password" },
+  "sinAcceso": { "titulo": "No access", "texto": "Your profile has no permissions for this section.", "ir": "Go to my account" },
+  "panel": {
+    "titulo": "Dashboard", "productosActivos": "Active products", "bajoMinimo": "At minimum", "agotados": "Out of stock",
+    "alertas": "Pending alerts", "movimientosHoy": "Movements today", "verTodos": "See all", "enMinimos": "Products at minimum",
+    "todoBien": "No product is at its minimum.", "reponer": "Restock"
   },
   "productos": {
-    "titulo": "Products",
-    "nuevo": "New product",
-    "buscar": "Search by name or category",
-    "estado": "Status",
-    "todos": "All",
-    "vacio": "No products match.",
-    "cargando": "Loading products",
-    "editar": "Edit product",
-    "desactivar": "Deactivate product",
-    "filasPorPagina": "Rows per page",
-    "cols": { "nombre": "Name", "categoria": "Category", "descripcion": "Description", "estado": "Status", "acciones": "Actions" },
-    "estados": { "ACTIVO": "Active", "INACTIVO": "Inactive" }
+    "titulo": "Products", "nuevo": "New product", "buscar": "Search by code, name or category", "estado": "Status", "todos": "All",
+    "soloMinimos": "Only at minimum", "vacio": "No products match.", "cargando": "Loading products",
+    "editar": "Edit product", "desactivar": "Deactivate product", "movimiento": "Record movement", "historial": "View history",
+    "exportar": "Export CSV", "filasPorPagina": "Rows per page",
+    "cols": { "codigo": "Code", "nombre": "Name", "categoria": "Category", "descripcion": "Description", "stock": "Stock", "minimo": "Minimum", "estado": "Status", "acciones": "Actions" },
+    "estados": { "ACTIVO": "Active", "INACTIVO": "Inactive" },
+    "stockDe": "Stock: {{stock}} {{unidad}}", "minimoDe": "Minimum: {{minimo}}"
   },
+  "niveles": { "OK": "Normal", "BAJO": "Low", "AGOTADO": "Out of stock" },
+  "unidades": { "UND": "Unit", "KG": "Kilogram", "G": "Gram", "M": "Meter", "CM": "Centimeter", "L": "Liter", "ML": "Milliliter", "CAJA": "Box", "PAQUETE": "Package", "ROLLO": "Roll" },
   "form": {
-    "crear": "Create product",
-    "editarTitulo": "Edit product",
-    "nombre": "Name",
-    "categoria": "Category",
-    "descripcion": "Description",
-    "estado": "Status",
-    "guardar": "Save",
-    "cancelar": "Cancel"
+    "crear": "Create product", "editarTitulo": "Edit product", "codigo": "Code", "nombre": "Name", "categoria": "Category",
+    "descripcion": "Description", "unidad": "Unit", "stockMinimo": "Minimum stock", "stockInicial": "Initial stock", "estado": "Status",
+    "ayudaMinimo": "With 0 no alerts are raised", "ayudaInicial": "Recorded as an entry", "guardar": "Save", "cancelar": "Cancel"
   },
-  "confirmar": {
-    "titulo": "Deactivate product",
-    "texto": "The product \"{{nombre}}\" will become inactive. It is not deleted and can be reactivated.",
-    "si": "Deactivate"
+  "confirmar": { "titulo": "Deactivate product", "texto": "The product \"{{nombre}}\" will become inactive. It is not deleted and can be reactivated.", "si": "Deactivate" },
+  "movimientos": {
+    "titulo": "Movements", "registrar": "Record movement", "vacio": "No movements match.",
+    "producto": "Product", "tipo": "Type", "todos": "All", "desde": "From", "hasta": "To", "limpiar": "Clear filters",
+    "cols": { "fecha": "Date", "producto": "Product", "tipo": "Type", "motivo": "Reason", "variacion": "Change", "stock": "Stock", "usuario": "User", "detalle": "Reference and note" },
+    "tipos": { "ENTRADA": "Entry", "SALIDA": "Exit", "AJUSTE": "Adjustment" },
+    "cantidad": "Quantity", "stockContado": "Counted stock", "motivo": "Reason", "referencia": "Reference (invoice, order)",
+    "nota": "Note", "notaAjuste": "Note (required for adjustments)", "stockActual": "Current stock: {{stock}} {{unidad}}",
+    "buscarProducto": "Search product", "sinProductos": "No results", "registrado": "Movement recorded",
+    "anteriorResultante": "{{anterior}} → {{resultante}}"
+  },
+  "motivos": {
+    "COMPRA": "Purchase", "DEVOLUCION_CLIENTE": "Customer return", "STOCK_INICIAL": "Initial stock", "OTRA_ENTRADA": "Other entry",
+    "VENTA": "Sale", "CONSUMO_INTERNO": "Internal use", "MERMA": "Shrinkage", "DEVOLUCION_PROVEEDOR": "Return to supplier", "OTRA_SALIDA": "Other exit",
+    "CONTEO_FISICO": "Physical count", "DANO": "Damage", "CORRECCION": "Correction"
+  },
+  "alertas": {
+    "titulo": "Stock alerts", "vigentes": "Active", "resueltas": "Resolved", "vacio": "No alerts in this view.",
+    "reconocer": "Acknowledge", "reponer": "Restock", "reconocida": "Alert acknowledged",
+    "cols": { "producto": "Product", "nivel": "Level", "stock": "Stock", "minimo": "Minimum", "faltante": "Shortfall", "estado": "Status", "detectada": "Detected", "acciones": "Actions" },
+    "estados": { "ABIERTA": "Pending", "RECONOCIDA": "Acknowledged", "RESUELTA": "Resolved" },
+    "por": "by {{usuario}}"
+  },
+  "usuarios": {
+    "titulo": "Users", "nuevo": "New user", "buscar": "Search by username or name", "vacio": "No users match.",
+    "editar": "Edit user", "clave": "Reset password", "crearTitulo": "Create user", "editarTitulo": "Edit user",
+    "claveTitulo": "Reset password for {{usuario}}", "nuevaClave": "New password", "activo": "Active",
+    "cols": { "usuario": "User", "nombre": "Name", "correo": "Email", "perfil": "Profile", "estado": "Status", "acciones": "Actions" },
+    "estados": { "true": "Active", "false": "Inactive" },
+    "username": "Username", "password": "Password", "nombreCompleto": "Full name", "email": "Email", "perfil": "Profile",
+    "ayudaClave": "8 to 72 characters, with a letter and a digit, no spaces", "creado": "User created", "actualizado": "User updated", "claveCambiada": "Password reset",
+    "esUnoMismo": "You cannot deactivate yourself or change your own profile"
+  },
+  "perfiles": {
+    "titulo": "Profiles", "nuevo": "New profile", "vacio": "No profiles.", "editar": "Edit profile", "eliminar": "Delete profile",
+    "crearTitulo": "Create profile", "editarTitulo": "Edit profile", "nombre": "Profile name", "descripcion": "Description", "permisos": "Permissions",
+    "cols": { "nombre": "Profile", "descripcion": "Description", "permisos": "Permissions", "usuarios": "Users", "acciones": "Actions" },
+    "sistema": "System", "soloLectura": "System profile: read only", "creado": "Profile created", "actualizado": "Profile updated", "eliminado": "Profile deleted",
+    "confirmarTitulo": "Delete profile", "confirmarTexto": "The profile \"{{nombre}}\" will be deleted. This cannot be undone.", "eliminarSi": "Delete",
+    "cantidadPermisos": "{{n}} permissions", "marcarModulo": "Whole module"
+  },
+  "modulos": { "productos": "Products", "inventario": "Inventory", "alertas": "Alerts", "reportes": "Reports", "administracion": "Administration" },
+  "permisos": {
+    "PRODUCTOS_VER": "View products and dashboard", "PRODUCTOS_GESTIONAR": "Create, edit and deactivate products",
+    "MOVIMIENTOS_VER": "View movement history", "MOVIMIENTOS_REGISTRAR": "Record entries and exits",
+    "AJUSTES_REGISTRAR": "Record count adjustments", "ALERTAS_VER": "View stock alerts",
+    "ALERTAS_GESTIONAR": "Acknowledge alerts", "REPORTES_VER": "Download reports",
+    "USUARIOS_GESTIONAR": "Manage users", "PERFILES_GESTIONAR": "Manage profiles"
+  },
+  "cuenta": {
+    "titulo": "My account", "datos": "My details", "usuario": "Username", "perfil": "Profile", "nombreCompleto": "Full name", "email": "Email",
+    "guardar": "Save changes", "guardado": "Details updated", "seguridad": "Change password", "actual": "Current password",
+    "nueva": "New password", "confirmar": "Confirm new password", "cambiar": "Change password", "claveCambiada": "Password updated",
+    "misPermisos": "My permissions"
   },
   "validacion": {
-    "nombreRequerido": "Name is required",
-    "nombreTamano": "Name must be between 3 and 100 characters",
-    "categoriaRequerida": "Category is required",
-    "categoriaTamano": "Category cannot exceed 60 characters",
-    "descripcionTamano": "Description cannot exceed 500 characters",
-    "usuarioRequerido": "Username is required",
-    "claveRequerida": "Password is required"
+    "codigoRequerido": "Code is required", "codigoFormato": "2 to 30 characters: letters, digits, dot, hyphen and underscore",
+    "nombreRequerido": "Name is required", "nombreTamano": "Name must be between 3 and 100 characters",
+    "categoriaRequerida": "Category is required", "categoriaTamano": "Category cannot exceed 60 characters",
+    "descripcionTamano": "Description cannot exceed 500 characters", "unidadRequerida": "Choose a unit",
+    "cantidadFormato": "Use a non-negative number with up to 3 decimals", "cantidadRequerida": "Quantity is required",
+    "cantidadPositiva": "Quantity must be greater than zero", "contadoRequerido": "Counted stock is required",
+    "productoRequerido": "Choose a product", "motivoRequerido": "Choose a reason", "referenciaTamano": "At most 40 characters",
+    "notaTamano": "At most 300 characters", "notaAjuste": "Note is required (at least 5 characters)",
+    "usuarioRequerido": "Username is required", "claveRequerida": "Password is required",
+    "usernameRequerido": "Username is required", "usernameFormato": "3 to 50 characters: letters, digits, dot, hyphen and underscore",
+    "claveFormato": "8 to 72 characters, with at least one letter and one digit, no spaces",
+    "nombreCompletoRequerido": "Full name is required", "nombreCompletoTamano": "Between 2 and 100 characters",
+    "emailFormato": "Email is not valid", "emailTamano": "At most 120 characters", "perfilRequerido": "Choose a profile",
+    "perfilNombreRequerido": "Profile name is required", "perfilNombreTamano": "Between 3 and 60 characters",
+    "perfilDescripcionTamano": "At most 200 characters", "permisosRequeridos": "Choose at least one permission",
+    "claveActualRequerida": "Current password is required", "claveIgual": "The new password must differ from the current one",
+    "confirmarRequerida": "Confirm the new password", "confirmarDistinta": "Passwords do not match"
   },
   "errores": { "red": "Could not reach the server", "generico": "An unexpected error occurred" },
-  "avisos": { "creado": "Product created", "actualizado": "Product updated", "desactivado": "Product deactivated" }
+  "avisos": { "creado": "Product created", "actualizado": "Product updated", "desactivado": "Product deactivated", "exportado": "Report downloaded" }
 }
