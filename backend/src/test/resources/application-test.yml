@@ -1,0 +1,19 @@
+# nombre: application-test.yml
+# descripcion: Configuración de pruebas con H2 en modo PostgreSQL.
+# fecha_creacion: 2026-10-07
+# actualizacion: 2026-10-07
+# autor: Camilo1408
+# version: 1.0.0
+spring:
+  datasource:
+    url: jdbc:h2:mem:ferreteria;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+app:
+  seed:
+    enabled: true
+    admin-password: AdminTest1*
+    user-password: UserTest1*

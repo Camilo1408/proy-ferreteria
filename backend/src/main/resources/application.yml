@@ -1,0 +1,42 @@
+# nombre: application.yml
+# descripcion: Configuración por defecto (desarrollo). En producción todo se sobreescribe con variables de entorno.
+# fecha_creacion: 2026-10-07
+# actualizacion: 2026-10-07
+# autor: Camilo1408
+# version: 1.0.0
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: inventario-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ferreteria}
+    username: ${SPRING_DATASOURCE_USERNAME:ferreteria}
+    password: ${SPRING_DATASOURCE_PASSWORD:ferreteria}
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    open-in-view: false
+
+app:
+  jwt:
+    # En producción definir JWT_SECRET (mínimo 32 caracteres). El valor por defecto es solo para desarrollo.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
+    minutes: ${JWT_MINUTES:60}
+  cors:
+    origins: ${CORS_ORIGINS:http://localhost:5173}
+  seed:
+    enabled: ${SEED_ENABLED:true}
+    admin-password: ${SEED_ADMIN_PASSWORD:Admin123*}
+    user-password: ${SEED_USER_PASSWORD:User123*}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
