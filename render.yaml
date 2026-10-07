@@ -1,5 +1,5 @@
 # nombre: render.yaml
-# descripcion: Blueprint de Render (referencia de la infraestructura desplegada).
+# descripcion: Blueprint de Render (referencia de la infraestructura desplegada; los servicios reales se crearon con la CLI).
 # fecha_creacion: 2026-10-07
 # actualizacion: 2026-10-07
 # autor: Camilo1408
@@ -26,6 +26,10 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
+      - key: DDL_AUTO
+        value: update
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx320m -XX:+UseSerialGC
   - type: web
     name: ferreteria-web
     runtime: static

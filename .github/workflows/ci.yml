@@ -110,16 +110,25 @@ jobs:
     needs: [backend, frontend, e2e]
     runs-on: ubuntu-latest
     steps:
-      - name: Disparar despliegue del back-end
-        env: { HOOK: '${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}' }
+      - name: Desplegar API y front-end
+        env:
+          API_KEY: ${{ secrets.RENDER_API_KEY }}
+          API_ID: ${{ vars.RENDER_API_SERVICE_ID }}
+          WEB_ID: ${{ vars.RENDER_WEB_SERVICE_ID }}
+          HOOK_API: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+          HOOK_WEB: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
         run: |
-          if [ -z "$HOOK" ]; then echo "Sin hook: Render despliega por auto-deploy"; exit 0; fi
-          curl -fsS -X POST "$HOOK"
-      - name: Disparar despliegue del front-end
-        env: { HOOK: '${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}' }
-        run: |
-          if [ -z "$HOOK" ]; then echo "Sin hook: Render despliega por auto-deploy"; exit 0; fi
-          curl -fsS -X POST "$HOOK"
+          if [ -n "$API_KEY" ] && [ -n "$API_ID" ] && [ -n "$WEB_ID" ]; then
+            for id in "$API_ID" "$WEB_ID"; do
+              curl -fsS -X POST "https://api.render.com/v1/services/$id/deploys"                 -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" -d '{}'
+              echo
+            done
+          elif [ -n "$HOOK_API" ] && [ -n "$HOOK_WEB" ]; then
+            curl -fsS -X POST "$HOOK_API"
+            curl -fsS -X POST "$HOOK_WEB"
+          else
+            echo "::warning::Las pruebas pasaron pero NO se desplegó: falta el secreto RENDER_API_KEY (o los deploy hooks). Despliegue manual: render deploys create <id-del-servicio>"
+          fi
 
   reportar-fallo:
     name: Crear issue y notificar
