@@ -76,7 +76,10 @@ export default function MovimientoDialog({ abierto, producto = null, tipoInicial
   const esAjuste = formik.values.tipo === 'AJUSTE';
 
   return (
-    <Dialog open={abierto} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="mov-titulo">
+    <Dialog
+      open={abierto} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="mov-titulo"
+      TransitionProps={{ onExited: () => { formik.resetForm(); setElegido(null); setErrorApi(''); } }}
+    >
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="mov-titulo">{t('movimientos.registrar')}</DialogTitle>
         <DialogContent>

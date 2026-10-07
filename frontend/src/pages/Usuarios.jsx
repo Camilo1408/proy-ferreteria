@@ -61,7 +61,10 @@ function UsuarioDialog({ usuario, perfiles, esUnoMismo, onCerrar, onGuardado }) 
   });
   const campo = useCampos(formik, t);
   return (
-    <Dialog open={Boolean(usuario)} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="usuario-titulo">
+    <Dialog
+      open={Boolean(usuario)} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="usuario-titulo"
+      TransitionProps={{ onExited: () => { formik.resetForm(); setErrorApi(''); } }}
+    >
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="usuario-titulo">{editando ? t('usuarios.editarTitulo') : t('usuarios.crearTitulo')}</DialogTitle>
         <DialogContent>
@@ -117,7 +120,10 @@ function ClaveDialog({ usuario, onCerrar, onGuardado }) {
   });
   const campo = useCampos(formik, t);
   return (
-    <Dialog open={Boolean(usuario)} onClose={onCerrar} fullWidth maxWidth="xs" aria-labelledby="clave-titulo">
+    <Dialog
+      open={Boolean(usuario)} onClose={onCerrar} fullWidth maxWidth="xs" aria-labelledby="clave-titulo"
+      TransitionProps={{ onExited: () => { formik.resetForm(); setErrorApi(''); } }}
+    >
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="clave-titulo">{t('usuarios.claveTitulo', { usuario: usuario?.username })}</DialogTitle>
         <DialogContent>

@@ -75,7 +75,10 @@ export default function ProductoForm({ abierto, producto, onCerrar, onGuardar })
     margin: 'dense',
   });
   return (
-    <Dialog open={abierto} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="producto-titulo">
+    <Dialog
+      open={abierto} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="producto-titulo"
+      TransitionProps={{ onExited: () => { formik.resetForm(); setErrorApi(''); } }}
+    >
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="producto-titulo">{editando ? t('form.editarTitulo') : t('form.crear')}</DialogTitle>
         <DialogContent>

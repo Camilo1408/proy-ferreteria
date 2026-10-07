@@ -13,13 +13,26 @@ Proyecto académico. Los umbrales son objetivos del equipo, no compromisos de pr
 
 Los endpoints de métricas requieren token de ADMIN.
 
+### Métricas de negocio del inventario
+
+| Métrica | Fuente | Umbral / uso |
+|---|---|---|
+| Productos con stock negativo | consulta `select count(*) from producto where stock_actual < 0` (la base lo impide con un `CHECK`) | 0 siempre |
+| Productos en mínimos y agotados | `GET /api/v1/dashboard` | Revisión diaria; debe tender a 0 |
+| Alertas pendientes (abiertas) | `GET /api/v1/alertas/resumen` y campana de la interfaz | Cada alerta se reconoce o se repone en el día |
+| Tiempo medio de resolución de una alerta | `resuelta_en - creada_en` en la tabla `alerta` | Seguimiento semanal |
+| Movimientos por tipo y por usuario | `GET /api/v1/movimientos` (kárdex) | Control de actividad y detección de ajustes frecuentes |
+| Ajustes sobre el total de movimientos | tipo AJUSTE / total | Un porcentaje alto indica problemas de conteo o de proceso |
+| Intentos de salida con stock insuficiente | respuestas 409 `STOCK_INSUFICIENTE` en `http.server.requests` | Seguimiento: señala desorden entre inventario físico y sistema |
+| Usuarios activos por perfil | `GET /api/v1/usuarios` | Revisión mensual de permisos (principio de mínimo privilegio) |
+
 ## 2. Métricas del proceso (calidad)
 
 | Métrica | Fuente | Umbral |
 |---|---|---|
 | Pruebas automáticas pasando | CI | 100 % |
 | Puntaje de mutación (PIT) | `backend/target/pit-reports` | ≥ 70 % |
-| Criterios de aceptación con prueba | `docs/casos-prueba.md` | 15 de 15 |
+| Criterios de aceptación con prueba | `docs/casos-prueba.md` | 57 de 57 |
 | Tiempo del pipeline | GitHub Actions | < 15 min |
 | Tasa de fallos del pipeline en `main` | Issues con etiqueta `ci-fallo` / ejecuciones | < 20 % |
 | Tiempo de corrección de un fallo | Issue abierto → cerrado | < 2 días |

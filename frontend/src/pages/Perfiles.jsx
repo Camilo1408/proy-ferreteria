@@ -66,7 +66,10 @@ function PerfilDialog({ perfil, catalogo, onCerrar, onGuardado }) {
   const errNombre = formik.touched.nombre && formik.errors.nombre;
   const errPermisos = formik.touched.permisos && formik.errors.permisos;
   return (
-    <Dialog open={Boolean(perfil)} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="perfil-titulo">
+    <Dialog
+      open={Boolean(perfil)} onClose={onCerrar} fullWidth maxWidth="sm" aria-labelledby="perfil-titulo"
+      TransitionProps={{ onExited: () => { formik.resetForm(); setErrorApi(''); } }}
+    >
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="perfil-titulo">{editando ? t('perfiles.editarTitulo') : t('perfiles.crearTitulo')}</DialogTitle>
         <DialogContent>

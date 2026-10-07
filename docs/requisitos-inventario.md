@@ -6,6 +6,8 @@ Proyecto académico. Amplía el CRUD de productos hacia un inventario básico: e
 
 Incluye: existencias por producto, entradas, salidas y ajustes con historial (kárdex), alertas de stock mínimo, perfiles con permisos por módulo, gestión de usuarios, gestión de la cuenta propia, panel de resumen y reporte CSV de inventario.
 
+Se incluyen además: navegación por permisos, campana de alertas con contador, diálogos de movimiento rápido desde productos, panel y alertas, y el tema claro/oscuro con español e inglés.
+
 Fuera de alcance (explícito): múltiples bodegas, lotes y vencimientos, costos y valorización, proveedores y clientes, órdenes de compra, envío de alertas por correo o SMS, recuperación de contraseña por correo, autenticación de dos factores. Las alertas son dentro de la aplicación (campana con contador y listado).
 
 ## 2. Roles y perfiles
@@ -25,7 +27,7 @@ Los permisos son modulares y se asignan a **perfiles**; cada usuario tiene un pe
 | USUARIOS_GESTIONAR | Administración | Crear, editar, desactivar usuarios y restablecer contraseñas |
 | PERFILES_GESTIONAR | Administración | Crear, editar y eliminar perfiles |
 
-Perfiles de partida: **ADMINISTRADOR** (todos los permisos, protegido: no se edita ni se elimina), **CONSULTA** (ver productos, movimientos, alertas y reportes). El administrador puede crear perfiles nuevos con cualquier combinación de permisos. Toda cuenta autenticada puede gestionar su propia cuenta sin permiso adicional.
+Perfiles de partida: **ADMINISTRADOR** (todos los permisos, protegido: no se edita ni se elimina) y **CONSULTA** (ver productos, movimientos, alertas y reportes; editable). Usuarios iniciales: `admin` (ADMINISTRADOR) y `user` (CONSULTA); sus contraseñas se definen por variables de entorno. El administrador puede crear perfiles nuevos con cualquier combinación de permisos. Toda cuenta autenticada puede gestionar su propia cuenta sin permiso adicional.
 
 ## 3. Requisitos funcionales y criterios de aceptación
 
@@ -47,6 +49,7 @@ Perfiles de partida: **ADMINISTRADOR** (todos los permisos, protegido: no se edi
 | RF-14 | Usuarios: crear, editar, activar/desactivar y restablecer contraseña (nunca se borran) | **CA-47** Crear usuario con perfil; usuario duplicado devuelve 409. **CA-48** Un usuario desactivado no puede iniciar sesión ni usar un token anterior. **CA-49** Nadie puede desactivarse ni cambiarse el perfil a sí mismo. **CA-50** Contraseña de menos de 8 caracteres o sin letra y número devuelve 400. |
 | RF-15 | Permisos aplicados en el servidor y en la interfaz | **CA-51** Cada endpoint exige su permiso: sin él devuelve 403 y sin sesión 401. **CA-52** Los cambios de permisos de un perfil rigen de inmediato en el siguiente request. **CA-53** La interfaz solo muestra las secciones y acciones permitidas. |
 | RF-16 | Cuenta propia: ver y editar nombre y correo, cambiar la contraseña con la actual | **CA-54** Cambiar contraseña con la actual incorrecta devuelve 400 y no cambia nada. **CA-55** Tras cambiarla, la anterior ya no sirve y la nueva sí. **CA-56** La nueva contraseña no puede ser igual a la actual. |
+| RF-17 | Migración de la base de la versión anterior | **CA-57** Una base creada con la primera versión arranca con el sistema nuevo: conserva sus productos (código `LEG-n`, unidad UND, stock 0 y mínimo 0), elimina los usuarios antiguos (con rol) y los rehace con perfiles, y permite registrar movimientos sobre los productos heredados. |
 
 ## 4. Requisitos no funcionales
 
@@ -71,6 +74,8 @@ Perfiles de partida: **ADMINISTRADOR** (todos los permisos, protegido: no se edi
 7. Un movimiento nunca se corrige: se compensa con otro (ajuste).
 
 ## 6. Matriz de endpoints
+
+Cada permiso se exige dos veces: por ruta en `SecurityConfig` (para que quien no lo tiene reciba 403 antes de que se valide el cuerpo) y con `@PreAuthorize` en el controlador. Los permisos se releen de la base en cada petición, de modo que un cambio de perfil o una desactivación rigen de inmediato.
 
 | Endpoint | Permiso |
 |---|---|
