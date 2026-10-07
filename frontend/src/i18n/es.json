@@ -1,0 +1,51 @@
+{
+  "app": { "nombre": "Ferretería", "saltar": "Saltar al contenido" },
+  "nav": { "salir": "Salir", "idioma": "Idioma", "tema": "Cambiar tema", "rol": "Rol" },
+  "login": {
+    "titulo": "Ingreso al inventario",
+    "usuario": "Usuario",
+    "clave": "Contraseña",
+    "entrar": "Entrar",
+    "error": "Usuario o contraseña incorrectos"
+  },
+  "productos": {
+    "titulo": "Productos",
+    "nuevo": "Nuevo producto",
+    "buscar": "Buscar por nombre o categoría",
+    "estado": "Estado",
+    "todos": "Todos",
+    "vacio": "No hay productos que coincidan.",
+    "cargando": "Cargando productos",
+    "editar": "Editar producto",
+    "desactivar": "Desactivar producto",
+    "filasPorPagina": "Filas por página",
+    "cols": { "nombre": "Nombre", "categoria": "Categoría", "descripcion": "Descripción", "estado": "Estado", "acciones": "Acciones" },
+    "estados": { "ACTIVO": "Activo", "INACTIVO": "Inactivo" }
+  },
+  "form": {
+    "crear": "Crear producto",
+    "editarTitulo": "Editar producto",
+    "nombre": "Nombre",
+    "categoria": "Categoría",
+    "descripcion": "Descripción",
+    "estado": "Estado",
+    "guardar": "Guardar",
+    "cancelar": "Cancelar"
+  },
+  "confirmar": {
+    "titulo": "Desactivar producto",
+    "texto": "El producto \"{{nombre}}\" pasará a inactivo. No se elimina y podrá reactivarse.",
+    "si": "Desactivar"
+  },
+  "validacion": {
+    "nombreRequerido": "El nombre es obligatorio",
+    "nombreTamano": "El nombre debe tener entre 3 y 100 caracteres",
+    "categoriaRequerida": "La categoría es obligatoria",
+    "categoriaTamano": "La categoría no puede superar 60 caracteres",
+    "descripcionTamano": "La descripción no puede superar 500 caracteres",
+    "usuarioRequerido": "El usuario es obligatorio",
+    "claveRequerida": "La contraseña es obligatoria"
+  },
+  "errores": { "red": "No se pudo conectar con el servidor", "generico": "Ocurrió un error inesperado" },
+  "avisos": { "creado": "Producto creado", "actualizado": "Producto actualizado", "desactivado": "Producto desactivado" }
+}
