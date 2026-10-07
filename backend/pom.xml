@@ -67,6 +67,7 @@
           <targetClasses><param>com.ferreteria.producto.*Service*</param></targetClasses>
           <targetTests><param>com.ferreteria.producto.*Test</param><param>com.ferreteria.producto.*IT</param></targetTests>
           <threads>2</threads>
+          <mutationThreshold>70</mutationThreshold>
           <outputFormats><param>HTML</param><param>XML</param></outputFormats>
         </configuration>
       </plugin>

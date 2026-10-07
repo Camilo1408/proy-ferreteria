@@ -1,0 +1,137 @@
+# nombre: ci.yml
+# descripcion: Pipeline CI/CD. En cada push/PR compila y prueba back-end y front-end y corre E2E.
+#              En main, si todo pasa, dispara el despliegue en Render. Si algo falla, abre un Issue y notifica.
+# fecha_creacion: 2026-10-07
+# actualizacion: 2026-10-07
+# autor: Camilo1408
+# version: 1.0.0
+name: CI-CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Back-end (compilar, probar, mutación)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - name: Pruebas unitarias, integración y sistema
+        run: mvn -B -f backend/pom.xml verify
+      - name: Pruebas de mutación (PIT, umbral 70 %)
+        run: mvn -B -f backend/pom.xml org.pitest:pitest-maven:mutationCoverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reportes-backend
+          path: |
+            backend/target/surefire-reports
+            backend/target/pit-reports
+      - uses: actions/upload-artifact@v4
+        with: { name: backend-jar, path: backend/target/inventario-backend-1.0.0.jar }
+
+  frontend:
+    name: Front-end (pruebas y build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        with: { name: frontend-dist, path: frontend/dist }
+
+  e2e:
+    name: E2E (Playwright y Selenium)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/download-artifact@v4
+        with: { name: backend-jar, path: backend/target }
+      - uses: actions/download-artifact@v4
+        with: { name: frontend-dist, path: frontend/dist }
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+        working-directory: tests/e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests/e2e
+      - name: Playwright
+        run: npx playwright test
+        working-directory: tests/e2e
+      - name: Selenium
+        run: npm run test:selenium
+        working-directory: tests/e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reportes-e2e
+          path: |
+            tests/e2e/playwright-report
+            tests/e2e/test-results
+
+  deploy:
+    name: Despliegue en Render
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, frontend, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar despliegue del back-end
+        env: { HOOK: '${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}' }
+        run: |
+          if [ -z "$HOOK" ]; then echo "Sin hook: Render despliega por auto-deploy"; exit 0; fi
+          curl -fsS -X POST "$HOOK"
+      - name: Disparar despliegue del front-end
+        env: { HOOK: '${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}' }
+        run: |
+          if [ -z "$HOOK" ]; then echo "Sin hook: Render despliega por auto-deploy"; exit 0; fi
+          curl -fsS -X POST "$HOOK"
+
+  reportar-fallo:
+    name: Crear issue y notificar
+    if: failure() && github.event_name == 'push'
+    needs: [backend, frontend, e2e, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId });
+            const fallidos = jobs.data.jobs.filter(j => j.conclusion === 'failure').map(j => `- ${j.name}`).join('\n');
+            const equipo = (process.env.TEAM_MENTIONS || '').trim();
+            const titulo = `Fallo de CI en ${context.sha.slice(0, 7)} (${context.ref.replace('refs/heads/', '')})`;
+            const abiertos = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'ci-fallo' });
+            if (abiertos.data.some(i => i.title === titulo)) return;
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo, title: titulo,
+              labels: ['ci-fallo', 'bug'], assignees: [context.actor],
+              body: `El pipeline falló y **no se desplegó**.\n\n**Jobs fallidos:**\n${fallidos}\n\n**Ejecución:** ${run}\n**Commit:** ${context.sha}\n**Autor del push:** @${context.actor}\n\n${equipo}\n\n### Tareas\n- [ ] Revisar el log\n- [ ] Corregir y subir el arreglo\n- [ ] Verificar que el pipeline pase`,
+            });
+        env:
+          TEAM_MENTIONS: ${{ vars.TEAM_MENTIONS }}
