@@ -39,7 +39,7 @@ export default function Login() {
         <Typography component="h1" variant="h1" sx={{ mb: 3 }}>
           {t('login.titulo')}
         </Typography>
-        <div role="alert" aria-live="assertive">
+        <div>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         </div>
         <TextField
@@ -48,7 +48,6 @@ export default function Login() {
           name="username"
           label={t('login.usuario')}
           autoComplete="username"
-          autoFocus
           value={formik.values.username}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}

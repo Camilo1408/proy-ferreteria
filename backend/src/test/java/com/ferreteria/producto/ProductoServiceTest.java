@@ -49,6 +49,58 @@ class ProductoServiceTest {
         assertEquals("Martillo", r.nombre());
     }
 
+    @Test @DisplayName("crear: guarda todos los campos y respeta un estado explícito")
+    void creaGuardaTodosLosCampos() {
+        when(repo.existsByNombreIgnoreCase("Sierra")).thenReturn(false);
+        when(repo.save(any(Producto.class))).thenAnswer(i -> i.getArgument(0));
+        service.crear(new ProductoRequest("Sierra", "Corte", "dientes finos", Estado.INACTIVO));
+        ArgumentCaptor<Producto> cap = ArgumentCaptor.forClass(Producto.class);
+        verify(repo).save(cap.capture());
+        assertEquals("Sierra", cap.getValue().getNombre());
+        assertEquals("Corte", cap.getValue().getCategoria());
+        assertEquals("dientes finos", cap.getValue().getDescripcion());
+        assertEquals(Estado.INACTIVO, cap.getValue().getEstado());
+    }
+
+    @Test @DisplayName("obtener: devuelve el producto existente")
+    void obtenerExistente() {
+        when(repo.findById(5L)).thenReturn(Optional.of(
+                Producto.builder().id(5L).nombre("Llave").categoria("Mecánica").descripcion("d").build()));
+        ProductoResponse r = service.obtener(5L);
+        assertEquals(5L, r.id());
+        assertEquals("Llave", r.nombre());
+        assertEquals("d", r.descripcion());
+    }
+
+    @Test @DisplayName("actualizar: modifica nombre, categoría, descripción y estado")
+    void actualizarModificaCampos() {
+        Producto p = Producto.builder().id(3L).nombre("Sierra").categoria("C").descripcion("a").build();
+        when(repo.findById(3L)).thenReturn(Optional.of(p));
+        when(repo.existsByNombreIgnoreCaseAndIdNot("Sierra Pro", 3L)).thenReturn(false);
+        when(repo.save(any(Producto.class))).thenAnswer(i -> i.getArgument(0));
+        ProductoResponse r = service.actualizar(3L, new ProductoRequest(" Sierra Pro ", " Corte ", "b", Estado.INACTIVO));
+        assertEquals("Sierra Pro", r.nombre());
+        assertEquals("Corte", r.categoria());
+        assertEquals("b", r.descripcion());
+        assertEquals(Estado.INACTIVO, r.estado());
+    }
+
+    @Test @DisplayName("listar: mapea la página del repositorio")
+    @SuppressWarnings("unchecked")
+    void listarMapeaPagina() {
+        org.springframework.data.domain.Pageable pag = org.springframework.data.domain.PageRequest.of(1, 2);
+        var pagina = new org.springframework.data.domain.PageImpl<>(
+                java.util.List.of(Producto.builder().id(1L).nombre("A").categoria("C").build()), pag, 5);
+        when(repo.findAll(any(org.springframework.data.jpa.domain.Specification.class),
+                org.mockito.ArgumentMatchers.eq(pag))).thenReturn(pagina);
+        PaginaResponse<ProductoResponse> r = service.listar(Estado.ACTIVO, "a", pag);
+        assertEquals(1, r.content().size());
+        assertEquals(5, r.totalElements());
+        assertEquals(3, r.totalPages());
+        assertEquals(1, r.page());
+        assertEquals(2, r.size());
+    }
+
     @Test @DisplayName("crear: nombre repetido lanza excepción y no guarda")
     void rechazaDuplicado() {
         when(repo.existsByNombreIgnoreCase("Martillo")).thenReturn(true);

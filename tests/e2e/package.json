@@ -1,0 +1,13 @@
+{
+  "name": "inventario-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:selenium": "node selenium/flujos.test.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "selenium-webdriver": "^4.25.0"
+  }
+}

@@ -132,7 +132,7 @@ export default function Productos() {
         </TextField>
       </Box>
 
-      <div role="alert" aria-live="assertive">{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}</div>
+      <div>{error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}</div>
 
       <Paper>
         {cargando && <LinearProgress aria-label={t('productos.cargando')} />}

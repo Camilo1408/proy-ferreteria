@@ -58,7 +58,7 @@ export default function ProductoForm({ abierto, producto, onCerrar, onGuardar })
       <form onSubmit={formik.handleSubmit} noValidate>
         <DialogTitle id="producto-titulo">{editando ? t('form.editarTitulo') : t('form.crear')}</DialogTitle>
         <DialogContent>
-          <div role="alert" aria-live="assertive">
+          <div>
             {errorApi && <Alert severity="error" sx={{ mb: 1 }}>{errorApi}</Alert>}
           </div>
           <TextField {...campo('nombre')} label={t('form.nombre')} autoFocus required inputProps={{ maxLength: 100 }} />
