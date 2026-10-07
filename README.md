@@ -62,7 +62,7 @@ Con Docker (PostgreSQL real): `docker compose up --build` → web en `:8081`, AP
 
 `.github/workflows/ci.yml`: en cada push o PR compila, prueba (incluida la mutación) y corre los E2E. Si algo falla en `main` abre un issue `ci-fallo` asignado a quien hizo el push, con el log y tareas.
 
-Despliegue en Render: el servicio **no** se redespliega solo con cada push. Para automatizarlo, cree una API key en Render (Account Settings → API Keys) y guárdela como secreto `RENDER_API_KEY` del repositorio; las variables `RENDER_API_SERVICE_ID` y `RENDER_WEB_SERVICE_ID` ya están definidas. También funcionan los secretos `RENDER_BACKEND_DEPLOY_HOOK` y `RENDER_FRONTEND_DEPLOY_HOOK`. Despliegue manual:
+Despliegue en Render: Render no se redespliega solo con el push (los servicios se crearon desde una URL pública, sin webhook), pero el pipeline lo hace: cuando las pruebas de `main` pasan, el job de despliegue pide un deploy de la API y del sitio web mediante la API de Render. Usa el secreto `RENDER_API_KEY` y las variables `RENDER_API_SERVICE_ID` y `RENDER_WEB_SERVICE_ID`, ya configurados. Si el secreto faltara, el job avisa y también acepta los secretos `RENDER_BACKEND_DEPLOY_HOOK` y `RENDER_FRONTEND_DEPLOY_HOOK`. Despliegue manual:
 
 ```bash
 render deploys create srv-db2ufke7bikc73b28gsg   # API
