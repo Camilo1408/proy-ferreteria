@@ -1,6 +1,6 @@
 /*
  * nombre: SecurityConfig.java
- * descripcion: Configuración de Spring Security (JWT sin estado, roles, CORS).
+ * descripcion: Configuración de Spring Security (JWT sin estado, permisos modulares, CORS).
  * fecha_creacion: 2026-10-07
  * actualizacion: 2026-10-07
  * autor: Camilo1408
@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,9 +29,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/** Reglas: GET de productos para USER y ADMIN; POST/PUT/DELETE solo ADMIN. */
+/** Toda la API exige sesión; el permiso de cada operación se declara con {@code @PreAuthorize} en los controladores. */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -50,9 +52,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/auth/login", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html", "/actuator/health/**", "/actuator/info").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/v1/productos/**").hasRole("ADMIN")
-                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").hasAuthority(Permiso.USUARIOS_GESTIONAR.authority())
+                        // Defensa en profundidad: el permiso se exige por ruta (antes de validar el cuerpo) y de nuevo
+                        // con @PreAuthorize en cada controlador. Un usuario sin permiso recibe 403, no un 400 de validación.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/dashboard")
+                                .hasAuthority(Permiso.PRODUCTOS_VER.authority())
+                        .requestMatchers("/api/v1/productos/**").hasAuthority(Permiso.PRODUCTOS_GESTIONAR.authority())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/movimientos/**").hasAuthority(Permiso.MOVIMIENTOS_VER.authority())
+                        .requestMatchers("/api/v1/movimientos/ajustes").hasAuthority(Permiso.AJUSTES_REGISTRAR.authority())
+                        .requestMatchers("/api/v1/movimientos/**").hasAuthority(Permiso.MOVIMIENTOS_REGISTRAR.authority())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/alertas/**").hasAuthority(Permiso.ALERTAS_VER.authority())
+                        .requestMatchers("/api/v1/alertas/**").hasAuthority(Permiso.ALERTAS_GESTIONAR.authority())
+                        .requestMatchers("/api/v1/reportes/**").hasAuthority(Permiso.REPORTES_VER.authority())
+                        .requestMatchers("/api/v1/usuarios/**").hasAuthority(Permiso.USUARIOS_GESTIONAR.authority())
+                        .requestMatchers(HttpMethod.GET, "/api/v1/perfiles/**")
+                                .hasAnyAuthority(Permiso.PERFILES_GESTIONAR.authority(), Permiso.USUARIOS_GESTIONAR.authority())
+                        .requestMatchers("/api/v1/perfiles/**").hasAuthority(Permiso.PERFILES_GESTIONAR.authority())
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint((rq, rs, ex) ->

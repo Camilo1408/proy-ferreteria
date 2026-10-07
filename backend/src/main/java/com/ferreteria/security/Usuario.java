@@ -1,30 +1,32 @@
 /*
  * nombre: Usuario.java
- * descripcion: Entidad de usuario para autenticación (roles ADMIN y USER).
+ * descripcion: Entidad de usuario con perfil de permisos modulares.
  * fecha_creacion: 2026-10-07
- * actualizacion: 2026-10-07
+ * actualizacion: 2026-10-08
  * autor: Camilo1408
- * version: 1.0.0
+ * version: 1.1.0
  */
 package com.ferreteria.security;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Usuario del sistema. La contraseña se guarda con BCrypt. */
+/** Usuario del sistema. La contraseña se guarda con BCrypt. Los usuarios no se eliminan: se desactivan. */
 @Entity
-@Table(name = "usuario")
+@Table(name = "app_usuario")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,12 +34,11 @@ import lombok.Setter;
 @Builder
 public class Usuario {
 
-    /** Identificador generado. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Nombre de usuario único. */
+    /** Nombre de usuario único, en minúscula. */
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
@@ -45,16 +46,22 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String password;
 
-    /** Rol del usuario. */
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private Rol rol;
+    @Column(name = "nombre_completo", nullable = false, length = 100)
+    private String nombreCompleto;
 
-    /** Roles disponibles. */
-    public enum Rol {
-        /** Puede leer y escribir. */
-        ADMIN,
-        /** Solo lectura. */
-        USER
-    }
+    @Column(length = 120)
+    private String email;
+
+    /** Un usuario inactivo no puede iniciar sesión ni usar tokens emitidos antes. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean activo = true;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "perfil_id", nullable = false)
+    private Perfil perfil;
+
+    @Column(name = "creado_en", nullable = false)
+    @Builder.Default
+    private Instant creadoEn = Instant.now();
 }

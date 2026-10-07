@@ -42,7 +42,6 @@ public class JwtService {
         Date ahora = new Date();
         return Jwts.builder()
                 .subject(u.getUsername())
-                .claim("rol", u.getRol().name())
                 .issuedAt(ahora)
                 .expiration(new Date(ahora.getTime() + vigencia.toMillis()))
                 .signWith(key)

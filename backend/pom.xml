@@ -64,9 +64,15 @@
           <dependency><groupId>org.pitest</groupId><artifactId>pitest-junit5-plugin</artifactId><version>1.2.1</version></dependency>
         </dependencies>
         <configuration>
-          <targetClasses><param>com.ferreteria.producto.*Service*</param></targetClasses>
-          <targetTests><param>com.ferreteria.producto.*Test</param><param>com.ferreteria.producto.*IT</param></targetTests>
-          <threads>2</threads>
+          <targetClasses>
+            <param>com.ferreteria.producto.ProductoService</param>
+            <param>com.ferreteria.inventario.MovimientoService</param>
+            <param>com.ferreteria.alerta.AlertaService</param>
+            <param>com.ferreteria.security.UsuarioService</param>
+            <param>com.ferreteria.security.PerfilService</param>
+          </targetClasses>
+          <targetTests><param>com.ferreteria.*Test</param><param>com.ferreteria.*IT</param></targetTests>
+          <threads>4</threads>
           <mutationThreshold>70</mutationThreshold>
           <outputFormats><param>HTML</param><param>XML</param></outputFormats>
         </configuration>

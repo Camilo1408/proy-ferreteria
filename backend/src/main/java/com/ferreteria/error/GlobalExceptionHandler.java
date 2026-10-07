@@ -45,10 +45,23 @@ public class GlobalExceptionHandler {
         return resp(HttpStatus.BAD_REQUEST, "VALIDACION", "error.validacion", det);
     }
 
-    /** 400: JSON malformado o parámetros con tipo inválido. */
-    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    /** 400: JSON malformado, parámetros faltantes o con tipo inválido. */
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
     public ResponseEntity<ErrorResponse> solicitudInvalida(Exception ex) {
         return resp(HttpStatus.BAD_REQUEST, "SOLICITUD_INVALIDA", "error.solicitud", List.of());
+    }
+
+    /** Regla de negocio violada: estado, código y mensaje los define quien la lanza. */
+    @ExceptionHandler(NegocioException.class)
+    public ResponseEntity<ErrorResponse> negocio(NegocioException ex) {
+        return resp(ex.getStatus(), ex.getCodigo(), ex.getClave(), List.of(), ex.getArgs());
+    }
+
+    /** 409: violación de unicidad u otra restricción de la base (por ejemplo, carreras al crear). */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> integridad(org.springframework.dao.DataIntegrityViolationException ex) {
+        return resp(HttpStatus.CONFLICT, "CONFLICTO_DATOS", "error.integridad", List.of());
     }
 
     /** 404: producto inexistente. */
@@ -73,6 +86,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> prohibido(AccessDeniedException ex) {
         return resp(HttpStatus.FORBIDDEN, "PROHIBIDO", "error.prohibido", List.of());
+    }
+
+    /** 404: ruta inexistente. */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> rutaInexistente(Exception ex) {
+        return resp(HttpStatus.NOT_FOUND, "RUTA_NO_ENCONTRADA", "error.ruta", List.of());
+    }
+
+    /** 405: método HTTP no permitido en la ruta. */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> metodoNoPermitido(Exception ex) {
+        return resp(HttpStatus.METHOD_NOT_ALLOWED, "METODO_NO_PERMITIDO", "error.metodo", List.of());
+    }
+
+    /** 415: tipo de contenido no soportado. */
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> tipoNoSoportado(Exception ex) {
+        return resp(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "TIPO_NO_SOPORTADO", "error.tipoContenido", List.of());
     }
 
     /** 500: cualquier error no previsto, sin exponer detalles internos. */

@@ -1,10 +1,10 @@
 /*
  * nombre: ProductoController.java
- * descripcion: API REST del CRUD de productos.
+ * descripcion: API REST del CRUD de productos con permisos modulares.
  * fecha_creacion: 2026-10-07
- * actualizacion: 2026-10-07
+ * actualizacion: 2026-10-08
  * autor: Camilo1408
- * version: 1.0.0
+ * version: 1.1.0
  */
 package com.ferreteria.producto;
 
@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/productos")
 @RequiredArgsConstructor
-@Tag(name = "Productos", description = "CRUD de productos (escritura solo ADMIN)")
+@Tag(name = "Productos", description = "CRUD de productos con existencias")
 @SecurityRequirement(name = "bearer")
 public class ProductoController {
 
@@ -39,43 +40,49 @@ public class ProductoController {
 
     private final ProductoService service;
 
-    /** Lista paginada con filtros opcionales. */
+    /** Lista paginada con filtros opcionales; {@code bajoMinimo=true} muestra los productos en mínimos. */
     @GetMapping
+    @PreAuthorize("hasAuthority('PERM_PRODUCTOS_VER')")
     @Operation(summary = "Listar productos")
     public PaginaResponse<ProductoResponse> listar(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Estado estado,
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "false") boolean bajoMinimo) {
         int pagina = Math.max(page, 0);
         int tam = Math.min(Math.max(size, 1), TAM_MAX);
-        return service.listar(estado, q, PageRequest.of(pagina, tam, Sort.by("id")));
+        return service.listar(estado, q, bajoMinimo, PageRequest.of(pagina, tam, Sort.by("id")));
     }
 
     /** Obtiene un producto por id. */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('PERM_PRODUCTOS_VER')")
     @Operation(summary = "Obtener un producto")
     public ProductoResponse obtener(@PathVariable Long id) {
         return service.obtener(id);
     }
 
-    /** Crea un producto (ADMIN). */
+    /** Crea un producto. */
     @PostMapping
+    @PreAuthorize("hasAuthority('PERM_PRODUCTOS_GESTIONAR')")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Crear un producto")
     public ProductoResponse crear(@Valid @RequestBody ProductoRequest body) {
         return service.crear(body);
     }
 
-    /** Actualiza un producto (ADMIN). */
+    /** Actualiza un producto (no modifica su stock). */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('PERM_PRODUCTOS_GESTIONAR')")
     @Operation(summary = "Actualizar un producto")
     public ProductoResponse actualizar(@PathVariable Long id, @Valid @RequestBody ProductoRequest body) {
         return service.actualizar(id, body);
     }
 
-    /** Desactiva un producto: borrado lógico (ADMIN). */
+    /** Desactiva un producto: borrado lógico. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('PERM_PRODUCTOS_GESTIONAR')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Desactivar un producto")
     public void desactivar(@PathVariable Long id) {

@@ -14,12 +14,17 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ferreteria}
     username: ${SPRING_DATASOURCE_USERNAME:ferreteria}
     password: ${SPRING_DATASOURCE_PASSWORD:ferreteria}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:migracion-previa.sql
   jpa:
     hibernate:
       ddl-auto: ${DDL_AUTO:update}
     open-in-view: false
 
 app:
+  zona: ${APP_ZONA:America/Bogota}
   jwt:
     # En producción definir JWT_SECRET (mínimo 32 caracteres). El valor por defecto es solo para desarrollo.
     secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
